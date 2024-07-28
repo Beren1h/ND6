@@ -7,7 +7,7 @@ public static class Quintet
         Build();
     }
 
-    public static IEnumerable<string> Combinations { get; private set; }
+    public static List<string> Combinations { get; private set; }
 
     public static void Build()
     {
@@ -30,6 +30,6 @@ public static class Quintet
             }
         }
 
-        Combinations = result.Select(i => $"{i.Item1}{i.Item2}{i.Item3}{i.Item4}{i.Item5}");
+        Combinations = result.Select(i => $"{i.Item1}{i.Item2}{i.Item3}{i.Item4}{i.Item5}").ToList();
     }
 }

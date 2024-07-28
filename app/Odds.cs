@@ -8,25 +8,25 @@ public class Odds
     {
         var definition = new List<Die> {
             new (
-                Boon: [5,6],
-                Neutral: [3, 4],
-                Bane: [1,2]
-            ),
-            new (
-                Boon: [6],
-                Neutral: [1, 2, 3, 4, 5],
-                Bane: []
-            ),
-            new (
-                Boon: [6],
-                Neutral: [1, 2, 3, 4, 5],
-                Bane: []
-            ),
-            new (
-                Boon: [6],
-                Neutral: [1, 2, 3, 4, 5],
-                Bane: []
-            )                      
+                Boon: [3,4,5,6],
+                Neutral: [2],
+                Bane: [1]
+            )
+            // new (
+            //     Boon: [5,6],
+            //     Neutral: [1, 2, 3, 4],
+            //     Bane: []
+            // ),
+            // new (
+            //     Boon: [6],
+            //     Neutral: [1, 2, 3, 4, 5],
+            //     Bane: []
+            // ),
+            // new (
+            //     Boon: [6],
+            //     Neutral: [1, 2, 3, 4, 5],
+            //     Bane: []
+            // )                      
             // new (
             //     Boon: 2,
             //     Neutral: 2,
@@ -43,7 +43,9 @@ public class Odds
 
         foreach(var die in definition)
         {
-            name.Append($"o{die.Boon.Count}a{die.Bane.Count}n{die.Neutral.Count}_");
+            //name.Append($"o{die.Boon.Count}a{die.Bane.Count}n{die.Neutral.Count}_");
+            //name.Append($"{die.Neutral.Count}neutral{die.Boon.Count}boon{die.Bane.Count}bane_");
+            name.Append($"{die.Neutral.Count}{die.Boon.Count}{die.Bane.Count}_");
         }
 
         var combinations = definition.Count switch {
@@ -51,6 +53,8 @@ public class Odds
             2 => Duo.Combinations,
             3 => Trio.Combinations,
             4 => Quartet.Combinations,
+            5 => Quintet.Combinations,
+            6 => Sextet.Combinations,
             _ => []
         };
 
@@ -97,18 +101,20 @@ public class Odds
         var checksum = analysis.Select(a => a.Value).Sum();
         
         var content = new StringBuilder();
-        content.AppendLine("result,odds");
+        var trimmedName = name.ToString().Trim('_');
+        content.AppendLine("scenario,result,odds");
+
         
         foreach(var a in analysis)
         {
             //Console.WriteLine($"{a.Key} = {Math.Round(a.Value*100, 2)}%");
             Console.WriteLine($"{a.Value}");
-            content.AppendLine($"{a.Key},{a.Value}");
+            content.AppendLine($"{trimmedName},{a.Key},{a.Value}");
         }
 
-        File.WriteAllText($"c:\\lab\\ND6\\app\\Runs\\{name.ToString().Trim('_')}.csv", content.ToString());
+        File.WriteAllText($"c:\\lab\\ND6\\app\\Runs\\{trimmedName}.csv", content.ToString());
 
-        Console.WriteLine($"name={name.ToString().Trim('_')}");
+        Console.WriteLine($"name={trimmedName}");
         Console.WriteLine($"combinations={combinations.Count}");
         Console.WriteLine($"checksum={checksum}");
     }   

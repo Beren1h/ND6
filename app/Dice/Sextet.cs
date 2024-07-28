@@ -7,7 +7,7 @@ public static class Sextet
         Build();
     }
 
-    public static IEnumerable<string> Combinations { get; private set; }
+    public static List<string> Combinations { get; private set; }
 
     public static void Build()
     {
@@ -33,6 +33,6 @@ public static class Sextet
             }
         }
 
-        Combinations = result.Select(i => $"{i.Item1}{i.Item2}{i.Item3}{i.Item4}{i.Item5}{i.Item6}");
+        Combinations = result.Select(i => $"{i.Item1}{i.Item2}{i.Item3}{i.Item4}{i.Item5}{i.Item6}").ToList();
     }
 }
