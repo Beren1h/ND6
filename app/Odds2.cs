@@ -4,38 +4,39 @@ namespace nd6;
 
 public class Odds2
 {
-    public static void Build()
+    public static void Build(string selection)
     {
-        var definitions = new Dictionary<string, List<Die>> {
-            ["baseline"] = [
-                new (
-                    Neutral: [3,4],
-                    Boon: [5,6],
-                    Bane: [1,2]
-                )
-            ],
-            ["+1 pip"] = [
-                new (
-                    Neutral: [2,3],
-                    Boon: [4,5,6],
-                    Bane: [1]
-                )
-            ],
-            ["+2 pip"] = [
-                new (
-                    Neutral: [2],
-                    Boon: [3,4,5,6],
-                    Bane: [1]
-                )
-            ],
-            ["+3 pip"] = [
-                new (
-                    Neutral: [],
-                    Boon: [2,3,4,5,6],
-                    Bane: [1]
-                )
-            ]        
-        };
+        var definitions = Selector.Get(selection);
+        // var definitions = new Dictionary<string, List<Die>> {
+        //     ["baseline"] = [
+        //         new (
+        //             Neutral: [3,4],
+        //             Boon: [5,6],
+        //             Bane: [1,2]
+        //         )
+        //     ],
+        //     ["+1 pip"] = [
+        //         new (
+        //             Neutral: [2,3],
+        //             Boon: [4,5,6],
+        //             Bane: [1]
+        //         )
+        //     ],
+        //     ["+2 pip"] = [
+        //         new (
+        //             Neutral: [2],
+        //             Boon: [3,4,5,6],
+        //             Bane: [1]
+        //         )
+        //     ],
+        //     ["+3 pip"] = [
+        //         new (
+        //             Neutral: [],
+        //             Boon: [2,3,4,5,6],
+        //             Bane: [1]
+        //         )
+        //     ]
+        // };
 
         var initialSums = definitions.ToDictionary (
             x => x.Key,
