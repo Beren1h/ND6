@@ -77,8 +77,6 @@ public class Odds2
 
             for (var i = 0; i < combinations.Count; i++)
             {
-                Console.WriteLine(i);
-
                 var success = 0;
                 var failure = 0;
 

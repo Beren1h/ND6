@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using nd6.definitions;
 
 namespace nd6;
@@ -27,7 +29,17 @@ public class Odds3
                 _ => []
             };
 
-            Console.WriteLine(combinations.Count);
+            var size = 2;
+
+
+            if (combinations.Count == 7776)
+            {
+                size = 500;
+            }
+
+            var chunked = combinations.Chunk(size);
+
+            Console.WriteLine($"{combinations.Count} {size}");
         }
     }
 }
