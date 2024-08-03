@@ -70,10 +70,17 @@ public class Odds2
 
             Console.WriteLine(combinations.Count);
 
+            //var az = new Analytics();
+
             var results = combinations.ToDictionary (
                 x => x,
                 x => 0
             );
+
+            // foreach(var abc in results.Keys)
+            // {
+            //     az.Results.TryAdd(abc, results[abc]);
+            // }
 
             for (var i = 0; i < combinations.Count; i++)
             {
