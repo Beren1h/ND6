@@ -6,9 +6,9 @@ public static class Baseline
     {
             ["baseline"] = [
                 new (
-                    Neutral: [3,4],
-                    Boon: [5,6],
-                    Bane: [1,2]
+                    Neutral: [],
+                    Boon: [],
+                    Bane: [1,2,3,4,5,6]
                 )
             ]
         };

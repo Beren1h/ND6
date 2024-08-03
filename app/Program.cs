@@ -1,3 +1,4 @@
 ﻿using nd6;
 
-Odds2.Build(args[0]);
+//Odds2.Build(args[0]);
+Odds3.Build(args[0]);

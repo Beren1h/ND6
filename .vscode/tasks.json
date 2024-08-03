@@ -1,0 +1,16 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "dotnet",
+			"task": "build c:\\lab\\ND6\\app\\nd6.csproj",
+			"file": "c:\\lab\\ND6\\app\\nd6.csproj",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": [],
+			"label": "build"
+		}
+	]
+}

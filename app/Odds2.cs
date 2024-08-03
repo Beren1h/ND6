@@ -1,4 +1,5 @@
 using System.Text;
+using nd6.definitions;
 
 namespace nd6;
 
@@ -6,7 +7,11 @@ public class Odds2
 {
     public static void Build(string selection)
     {
-        var definitions = Selector.Get(selection);
+        var definitions = $"c:\\lab\\nd6\\app\\Definitions\\{selection}.ini".Build();
+
+        //var x = "c:\\lab\\nd6\\app\\Definitions\\impossible3x3.ini".Build();
+
+        //var definitions = Selector.Get(selection);
         // var definitions = new Dictionary<string, List<Die>> {
         //     ["baseline"] = [
         //         new (
@@ -59,8 +64,11 @@ public class Odds2
                 4 => Quartet.Combinations,
                 5 => Quintet.Combinations,
                 6 => Sextet.Combinations,
+                7 => Septet.Combinations,
                 _ => []
             };
+
+            Console.WriteLine(combinations.Count);
 
             var results = combinations.ToDictionary (
                 x => x,
@@ -69,6 +77,8 @@ public class Odds2
 
             for (var i = 0; i < combinations.Count; i++)
             {
+                Console.WriteLine(i);
+
                 var success = 0;
                 var failure = 0;
 
