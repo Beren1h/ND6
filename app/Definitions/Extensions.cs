@@ -1,8 +1,8 @@
 namespace nd6.definitions;
 
-public static class Builder
+public static class Extensions
 {
-    public static Dictionary<string, List<Die>> Build(this string path)
+    public static Dictionary<string, List<Die>> FromFile(this string path)
     {
         var definition = new Dictionary<string, List<Die>>();
 
@@ -74,6 +74,11 @@ public static class Builder
                 continue;
             }
 
+            if (line.StartsWith('#') || string.IsNullOrEmpty(line) || string.IsNullOrWhiteSpace(line))
+            {
+                continue;
+            }
+
             var boonCount = int.Parse(line[..1]);
             var baneCount = int.Parse(line.Substring(1,1));
             var range = new List<int> {1,2,3,4,5,6};
@@ -109,7 +114,7 @@ public static class Builder
                     );
 
                     definition[line].Add(die);
-                }                
+                }
             }
 
             index++;

@@ -7,4 +7,9 @@
     <Nullable>disable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Using Include="nd6.dice" />
+    <Using Include="nd6.definitions" />
+  </ItemGroup>
+
 </Project>

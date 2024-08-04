@@ -1,0 +1,12 @@
+# first line is always a comma separated list of the success faces for a boon
+# piped with the faces for a bane
+5,6|1,2
+# the second line is the difficult of the action
+# impossible, very hard, hard, neutral, easy, very easy, or guaranteed
+hard
+# the 3rd to n lines of a two digit number where the first digit is number of boons
+# and the second if the number of banes
+10
+20
+11
+21

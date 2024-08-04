@@ -1,121 +1,137 @@
+using System.Collections.Concurrent;
 using System.Text;
 
 namespace nd6;
 
 public class Odds
 {
-    public static void Build()
+    public static async Task Build(string selection)
     {
-        var definition = new List<Die> {
-            new (
-                Boon: [3,4,5,6],
-                Neutral: [2],
-                Bane: [1]
-            )
-            // new (
-            //     Boon: [5,6],
-            //     Neutral: [1, 2, 3, 4],
-            //     Bane: []
-            // ),
-            // new (
-            //     Boon: [6],
-            //     Neutral: [1, 2, 3, 4, 5],
-            //     Bane: []
-            // ),
-            // new (
-            //     Boon: [6],
-            //     Neutral: [1, 2, 3, 4, 5],
-            //     Bane: []
-            // )                      
-            // new (
-            //     Boon: 2,
-            //     Neutral: 2,
-            //     Bane: 2
-            // ),
-            // new (
-            //     Boon: 2,
-            //     Neutral: 2,
-            //     Bane: 2
-            // )            
-        };
+        var results = new ConcurrentDictionary<string, int>();
 
-        var name = new StringBuilder();
+        var definitions = $"c:\\lab\\nd6\\app\\.runs\\{selection}".FromFile();
 
-        foreach(var die in definition)
-        {
-            //name.Append($"o{die.Boon.Count}a{die.Bane.Count}n{die.Neutral.Count}_");
-            //name.Append($"{die.Neutral.Count}neutral{die.Boon.Count}boon{die.Bane.Count}bane_");
-            name.Append($"{die.Neutral.Count}{die.Boon.Count}{die.Bane.Count}_");
-        }
-
-        var combinations = definition.Count switch {
-            1 => Solo.Combinations,
-            2 => Duo.Combinations,
-            3 => Trio.Combinations,
-            4 => Quartet.Combinations,
-            5 => Quintet.Combinations,
-            6 => Sextet.Combinations,
-            _ => []
-        };
-
-        var results = combinations.ToDictionary (
-            x => x,
-            x => 0
+        var initialSums = definitions.ToDictionary (
+            x => x.Key,
+            x => new Dictionary<int, double>()
         );
 
-        for (var i = 0; i < combinations.Count; i++)
+        var adjustedSums = definitions.ToDictionary (
+            x => x.Key,
+            x => new Dictionary<int, double>()
+        );
+
+        foreach(var key in definitions.Keys)
         {
-            var success = 0;
-            var failure = 0;
+            var definition = definitions[key];
+            
+            var combinations = definition.Count.GetCombinations();
+            
+            var size = (int)Math.Ceiling(combinations.Count() / 10000m);
+            
+            var chunked = combinations.Chunk(size);
 
-            for (var j = 0; j < combinations[i].Length; j++)
+            var tasks = new List<Task>();
+
+            foreach(var chunk in chunked)
             {
-                var faces = definition[j];
-                var roll = combinations[i].Substring(j, 1);
+                tasks.Add(Task.Run(() => {
+                    
+                    for (var i = 0; i < chunk.Length; i++)
+                    {
+                        var success = 0;
+                        var failure = 0;
 
-                if (faces.Boon.Contains(int.Parse(roll)))
-                {
-                    success += 1;
-                }
+                        for (var j = 0; j < chunk[i].Length; j++)
+                        {
+                            var faces = definition[j];
+                            var roll = chunk[i].Substring(j, 1);
 
-                if (faces.Bane.Contains(int.Parse(roll)))
-                {
-                    failure -= 1;
-                }
+                            if (faces.Boon.Contains(int.Parse(roll)))
+                            {
+                                success += 1;
+                            }
+
+                            if (faces.Bane.Contains(int.Parse(roll)))
+                            {
+                                failure -= 1;
+                            }
+                        }
+
+                        results[chunk[i]] = success+failure;
+                    }
+                }));
             }
 
-            results[combinations[i]] = success+failure;
+            await Task.WhenAll(tasks);
+
+            var analysis = results.Select(x => x.Value).Distinct().ToDictionary(
+                x => x,
+                x => 0d
+            );
+
+            foreach (var a in analysis)
+            {
+                var total = (double)results.Where(r => r.Value == a.Key).Count();
+                analysis[a.Key] = total / results.Count;
+            }
+
+            initialSums[key] = analysis;            
+
+//             Console.WriteLine(@$"
+// rolls: {definition.Count},
+// combinations: {combinations.Count()},
+// chunks: {chunked.Count()},
+// tasks: {tasks.Count} successful={tasks.Where(t => t.IsCompletedSuccessfully).Count()},
+// results: {results.Count}
+//             ");
+
+            results.Clear();
         }
 
-        var analysis = results.Select(x => x.Value).Distinct().ToDictionary(
+        var range = initialSums.SelectMany(a => a.Value.Keys).Distinct();
+
+        foreach(var initialSum in initialSums)
+        {
+            var odds = initialSums[initialSum.Key];
+            var sums = odds.Select(x => x.Key);
+            var missingSums = range.Except(sums);
+
+            foreach(var sum in missingSums)
+            {
+                odds.Add(sum, 0f);
+            }
+
+            adjustedSums[initialSum.Key] = odds.OrderBy(o => o.Key).ToDictionary (
+                x => x.Key,
+                x => x.Value
+            );
+        }
+
+        var csv = adjustedSums.SelectMany(a => a.Value.Keys).Distinct().ToDictionary(
             x => x,
-            x => 0d
+            x => new List<double>()
         );
 
-        foreach (var a in analysis)
-        {
-            var total = (double)results.Where(r => r.Value == a.Key).Count();
-            analysis[a.Key] = total / results.Count;
-        }
-
-        var checksum = analysis.Select(a => a.Value).Sum();
-        
         var content = new StringBuilder();
-        var trimmedName = name.ToString().Trim('_');
-        content.AppendLine("scenario,result,odds");
+        var file = definitions.GetFileName();
 
-        
-        foreach(var a in analysis)
+        content.AppendLine(definitions.GetHeader());
+
+        foreach (var line in csv)
         {
-            //Console.WriteLine($"{a.Key} = {Math.Round(a.Value*100, 2)}%");
-            Console.WriteLine($"{a.Value}");
-            content.AppendLine($"{trimmedName},{a.Key},{a.Value}");
+            var row = $"{line.Key}";
+
+            foreach(var sum in adjustedSums.Values)
+            {
+                var odds = sum[line.Key];
+                line.Value.Add(odds);
+                row += $",{odds}";
+            }
+
+            content.AppendLine(row);
         }
-
-        File.WriteAllText($"c:\\lab\\ND6\\app\\Runs\\{trimmedName}.csv", content.ToString());
-
-        Console.WriteLine($"name={trimmedName}");
-        Console.WriteLine($"combinations={combinations.Count}");
-        Console.WriteLine($"checksum={checksum}");
-    }   
+       
+        Console.WriteLine(content.ToString());
+    }
 }
