@@ -44,15 +44,60 @@ public static class Extensions
 
         foreach(var definition in definitions)
         {
-            var column = string.Empty;
+            //var column = string.Empty;
+            var boons = 0;
+            var banes = 0;
+            //var task = 0;
 
             foreach(var die in definition.Value)
             {
-                column += $" {die.Neutral.Count}{die.Boon.Count}{die.Bane.Count}";
+                if (die.Boon.Count > 0 && die.Bane.Count == 0)
+                {
+                    boons++;
+                }
+
+                if (die.Bane.Count > 0 && die.Boon.Count == 0)
+                {
+                    banes++;
+                }
+
+                //column += $" {die.Neutral.Count}{die.Boon.Count}{die.Bane.Count}";
             }
 
-            column = column.Trim();
-            header.Append($",{column}");            
+            // var a = "1Bo1Ba";
+            // var b = "1boon 1bane";
+            // var c = "1+2-";
+            // var d = "1oon1ane";
+
+            // var boonBit = boons == 1 ?
+            //         "1 boon" :
+            //         $"{boons} boons";
+
+            // var baneBit = banes == 1 ?
+            //         "1 bane" :
+            //         $"{banes} banes";
+
+            // var boonBit = boons == 0 ?
+            //     string.Empty :
+            //         boons == 1 ?
+            //         "1 boon" :
+            //         $"{boons} boons";
+
+            // var baneBit = banes == 0 ?
+            //     string.Empty :
+            //         banes == 1 ?
+            //         "1 bane" :
+            //         $"{banes} banes";
+
+            //var column = $",{boonBit} {baneBit}";
+
+            var column = boons + banes == 0 ?
+            ",task" :
+            $",{boons}|{banes}";
+
+            //column = column.Trim();
+            //header.Append($",{column}");
+            header.Append(column);
         }
 
         return header.ToString();
