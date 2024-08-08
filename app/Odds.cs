@@ -4,48 +4,22 @@ using System.Text;
 
 namespace nd6;
 
-public class Logger
-{
-    public ConcurrentDictionary<string, ConcurrentBag<int>> Calculations { get; set; } = [];
-    public ConcurrentDictionary<string, int> Combinations { get; set; } = [];
-    public int Total = 0;
-}
-
 public class Odds
 {
     public static async Task Build(string selection)
     {
         var sw = new Stopwatch();
-        
-
-        var logger = new Logger();
-
-        //var logging = new Dictionary<string, Logger>();
-        //var logging = new ConcurrentDictionary<string, Logger>();
-        //var calc = new ConcurrentDictionary<string, ConcurrentBag<int>>();
-        //var comb = new ConcurrentDictionary<string, int>();
-
-        // var calculationAccumulator = 0;
-        // var log_Combinations = 0;
-        // string log_Definition = "";
-
-
         sw.Start();
 
         var results = new ConcurrentDictionary<string, int>();
-        //var log = "";
-
         var definitions = $"c:\\lab\\nd6\\app\\.runs\\{selection}".FromFile();
+        
+        var combinationsPerDefinition = definitions.ToDictionary (
+            d => d.Key,
+            d => d.Value.Count.GetCombinations()
+        );
 
-        foreach(var key in definitions.Keys)
-        {
-            var definition = definitions[key];
-            var combinations = definition.Count.GetCombinations();
-
-            logger.Total += combinations.Count();
-            logger.Calculations.TryAdd(key, []);
-            logger.Combinations.TryAdd(key, 0);
-        }
+        var calculationsRemaining = combinationsPerDefinition.Sum(d => d.Value.Count());
 
         var initialSums = definitions.ToDictionary (
             x => x.Key,
@@ -64,20 +38,20 @@ public class Odds
             var once = true;
             while(!token.IsCancellationRequested)
             {
-                if (logger.Total != 0)
+                if (calculationsRemaining != 0)
                 {
-                    Console.WriteLine($"calculations remaining: {logger.Total}, elapsed: {sw.ElapsedMilliseconds}ms");
+                    Console.WriteLine($"{sw.Display()} - calculations remaining: {calculationsRemaining}");
                 }
                 else
                 {
                     if (once)
                     {
                         once = false;
-                        Console.WriteLine($"calculations remaining: {logger.Total}, elapsed: {sw.ElapsedMilliseconds}ms");
+                        Console.WriteLine($"{sw.Display()} - calculations remaining: {calculationsRemaining}");
                     }
                     else
                     {
-                        Console.WriteLine($"finishing up, elapsed: {sw.ElapsedMilliseconds}ms");
+                        Console.WriteLine($"{sw.Display()} - aggregating results");
                     }
                 }
 
@@ -89,17 +63,12 @@ public class Odds
         {
             var definition = definitions[key];
             
-            var combinations = definition.Count.GetCombinations();
-
-            logger.Combinations[key] = combinations.Count();
-            
-            var size = (int)Math.Ceiling(combinations.Count() / 10000m);
-            
-            var chunked = combinations.Chunk(size);
+            var size = (int)Math.Ceiling(combinationsPerDefinition[key].Count() / 10000m);
+            var chunkedCalcuations = combinationsPerDefinition[key].Chunk(size);
 
             var tasks = new List<Task>();
 
-            foreach(var chunk in chunked)
+            foreach(var chunk in chunkedCalcuations)
             {
                 tasks.Add(Task.Run(() => {
 
@@ -122,18 +91,11 @@ public class Odds
                             {
                                 failure -= 1;
                             }
-
-                            //logging[key].Calculations++;
                         }
 
                         results[chunk[i]] = success+failure;
-                        //calc[key].Add(1);
-                        logger.Calculations[key].Add(1);
-                        Interlocked.Decrement(ref logger.Total);
+                        Interlocked.Decrement(ref calculationsRemaining);
                     }
-                    
-                    //log = $"{key}: {chunk.Length} of {combinations.Count()}";
-                    //Console.WriteLine($"{key}: {index} of {chunked.Count()}");
                 }));
             }
 
@@ -144,52 +106,28 @@ public class Odds
                 x => 0d
             );
 
-            var size2 = (int)Math.Ceiling(analysis.Count / 10000m);
-            var chucked2 = analysis.Chunk(size2);
-            //Console.WriteLine(chucked2.Count());
-            var analysis2 = new ConcurrentDictionary<int, double>();
-            
-            foreach(var a in analysis)
-            {
-                analysis2.TryAdd(a.Key, a.Value);
-            }
+            size = (int)Math.Ceiling(analysis.Count / 10000m);
+            var chunkedAnalysis = analysis.Chunk(size);
+            var threadSafeAnalysis = new ConcurrentDictionary<int, double>();
 
-            var tasks2 = new List<Task>();
+            tasks = [];
 
-            foreach(var a in analysis)
+            foreach(var analyzedResult in analysis)
             {
-                analysis2.TryAdd(a.Key, a.Value);
-                tasks2.Add(Task.Run(() => {
-                    var total = (double)results.Where(r => r.Value == a.Key).Count();
-                    analysis2[a.Key] = total / results.Count;
-                    //Console.WriteLine($"{total}, elpased: {sw.ElapsedMilliseconds}ms ");
+                threadSafeAnalysis.TryAdd(analyzedResult.Key, analyzedResult.Value);
+
+                tasks.Add(Task.Run(() => {
+                    var total = (double)results.Where(r => r.Value == analyzedResult.Key).Count();
+                    threadSafeAnalysis[analyzedResult.Key] = total / results.Count;
                 }));
             }
 
-            await Task.WhenAll(tasks2);
+            await Task.WhenAll(tasks);
 
-            // foreach (var a in analysis)
-            // {
-            //     var total = (double)results.Where(r => r.Value == a.Key).Count();
-            //     analysis[a.Key] = total / results.Count;
-            //     Console.WriteLine($"{total}, elpased: {sw.ElapsedMilliseconds}ms ");
-            // }
-
-            initialSums[key] = analysis2.ToDictionary(
+            initialSums[key] = threadSafeAnalysis.ToDictionary(
                 x => x.Key,
                 x => x.Value
             );
-
-            
-//             Console.WriteLine(@$"
-// rolls: {definition.Count},
-// combinations: {combinations.Count()},
-// size: {size},
-// chunks: {chunked.Count()},
-// calculations: {chunked.Select(c => c.ToList().Count).Sum()},
-// tasks: {tasks.Count} successful={tasks.Where(t => t.IsCompletedSuccessfully).Count()},
-// results: {results.Count}
-//             ");
 
             results.Clear();
         }
@@ -241,8 +179,9 @@ public class Odds
 
         sw.Stop();
 
-        Console.WriteLine($"completed {sw.ElapsedMilliseconds}ms");
+        Console.WriteLine($"{sw.Display()} - complete");
         Console.WriteLine();
         Console.WriteLine(content.ToString());
     }
 }
+

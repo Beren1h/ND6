@@ -1,9 +1,17 @@
+using System.Diagnostics;
 using System.Text;
 
 namespace nd6;
 
 public static class Extensions
 {
+    public static string Display(this Stopwatch sw)
+    {
+        var e = sw.Elapsed;
+
+        return $"{e.Hours:00}h {e.Minutes:00}m {e.Seconds:00}s {e.Milliseconds:000}m ";
+    }
+
     public static string GetFileName(this Dictionary<string, List<Die>> definitions)
     {
         var name = new StringBuilder();
@@ -44,10 +52,8 @@ public static class Extensions
 
         foreach(var definition in definitions)
         {
-            //var column = string.Empty;
             var boons = 0;
             var banes = 0;
-            //var task = 0;
 
             foreach(var die in definition.Value)
             {
@@ -60,43 +66,12 @@ public static class Extensions
                 {
                     banes++;
                 }
-
-                //column += $" {die.Neutral.Count}{die.Boon.Count}{die.Bane.Count}";
             }
-
-            // var a = "1Bo1Ba";
-            // var b = "1boon 1bane";
-            // var c = "1+2-";
-            // var d = "1oon1ane";
-
-            // var boonBit = boons == 1 ?
-            //         "1 boon" :
-            //         $"{boons} boons";
-
-            // var baneBit = banes == 1 ?
-            //         "1 bane" :
-            //         $"{banes} banes";
-
-            // var boonBit = boons == 0 ?
-            //     string.Empty :
-            //         boons == 1 ?
-            //         "1 boon" :
-            //         $"{boons} boons";
-
-            // var baneBit = banes == 0 ?
-            //     string.Empty :
-            //         banes == 1 ?
-            //         "1 bane" :
-            //         $"{banes} banes";
-
-            //var column = $",{boonBit} {baneBit}";
 
             var column = boons + banes == 0 ?
             ",task" :
             $",{boons}|{banes}";
 
-            //column = column.Trim();
-            //header.Append($",{column}");
             header.Append(column);
         }
 
