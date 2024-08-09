@@ -2,7 +2,7 @@
 # piped with the faces for a bane
 5,6|1,2
 # the second line is the difficult of the action
-# impossible, very hard, hard, neutral, easy, very easy, or guaranteed
+# impossible, very hard, hard, neutral, easy, very easy, or certain
 hard
 # the 3rd to n lines of a two digit number where the first digit is number of boons
 # and the second if the number of banes
@@ -10,3 +10,10 @@ hard
 20
 11
 21
+
+# spreads
+<name>:boon[123456]|bane[123456]|neutral[123456]
+...
+
+# rolls
+<number of rolls 1-9><spread name>| ...

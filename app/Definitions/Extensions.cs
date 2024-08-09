@@ -2,6 +2,105 @@ namespace nd6.definitions;
 
 public static class Extensions
 {
+    public const string SPREAD = "spreads";
+    public const string ROLLS = "rolls";
+    private readonly static Dictionary<string, Die> Spreads = [];
+    private readonly static Dictionary<string, List<Die>> Definition = [];
+
+    public static Dictionary<string, List<Die>> FromFile2(this string path)
+    {
+        var spreads = File.ReadAllLines($"c:\\lab\\nd6\\app\\.runs\\spreads");
+        var rolls = File.ReadAllLines(path);
+
+        var mode = string.Empty;
+
+        //foreach(var line in File.ReadAllLines(path))
+        foreach(var line in spreads.Concat(rolls).ToArray())
+        {
+            // name:boon[56]|bane[12]|neutral[34]
+
+            mode = line switch {
+                "# spreads" => SPREAD,
+                "# rolls" => ROLLS,
+                _ => mode
+            };
+
+            if (line.StartsWith('#'))
+            {
+                continue;
+            }
+
+            if (mode == SPREAD)
+            {
+                var split0 = line.Split(':');
+                Spreads.Add(split0[0], BuildDie(split0[1]));
+                continue;
+            }
+
+            if (mode == ROLLS)
+            {
+                Definition.Add(line, AddDice(line));
+            }
+        }
+
+        return Definition;
+    }
+
+    private static List<Die> AddDice(string definition)
+    {
+        var pairs = definition.Split('|');
+        List<Die> dice = [];
+
+        foreach(var pair in pairs)
+        {
+            var a = pair[..1];
+            var count = int.Parse(pair[..1]);
+            var type = pair.Substring(1,1);
+
+            for(var i = 0; i < count; i++)
+            {
+                dice.Add(Spreads[type]);
+            }
+        }
+       
+        return dice;
+    }
+
+    private static Die BuildDie(string definition)
+    {
+        var faces = definition.Split('|');
+        
+        List<int> neutral = [];
+        List<int> boon = [];
+        List<int> bane = [];
+
+        foreach(var face in faces)
+        {
+            var range = face.Split('[', ']');
+
+            if (range[0] == "neutral")
+            {
+                neutral = range[1].Select(n => int.Parse(n.ToString())).ToList();
+            }
+
+            if (range[0] == "boon")
+            {
+                boon = range[1].Select(n => int.Parse(n.ToString())).ToList();
+            }
+
+            if (range[0] == "bane")
+            {
+                bane = range[1].Select(n => int.Parse(n.ToString())).ToList();
+            }     
+        }
+
+        return new Die (
+            Neutral: neutral,
+            Boon: boon,
+            Bane: bane
+        );
+    }
+
     public static Dictionary<string, List<Die>> FromFile(this string path)
     {
         var definition = new Dictionary<string, List<Die>>();
@@ -56,7 +155,7 @@ public static class Extensions
                         Neutral: [],
                         Bane: [1]
                     ),
-                    "guaranteed" => new Die (
+                    "certain" => new Die (
                         Boon: [1,2,3,4,5,6],
                         Neutral: [],
                         Bane: []

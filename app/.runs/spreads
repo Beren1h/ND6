@@ -1,0 +1,10 @@
+# spreads
+I:bane[123456]
+VH:boon[6]|bane[12345]
+H:boon[56]|bane[1234]
+N:boon[456]|bane[123]
+E:boon[3456]|bane[12]
+VE:boon[23456]|bane[1]
+C:boon[123456]
+O:boon[456]|neutral[123]
+A:bane[123]|neutral[456]

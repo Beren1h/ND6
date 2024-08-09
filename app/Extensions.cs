@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Linq.Expressions;
 using System.Text;
 
 namespace nd6;
@@ -46,35 +47,37 @@ public static class Extensions
         return name.ToString().Trim();
     }
 
-    public static string GetHeader(this Dictionary<string, List<Die>> definitions)
-    {
-        var header = new StringBuilder("result");
+    // public static string GetHeader(this Dictionary<string, List<Die>> definitions)
+    // {
+    //     var header = new StringBuilder("result");
 
-        foreach(var definition in definitions)
-        {
-            var boons = 0;
-            var banes = 0;
+    //     foreach(var definition in definitions)
+    //     {
+    //         header.Append($",{definition.Key}");
 
-            foreach(var die in definition.Value)
-            {
-                if (die.Boon.Count > 0 && die.Bane.Count == 0)
-                {
-                    boons++;
-                }
+            // var boons = 0;
+            // var banes = 0;
 
-                if (die.Bane.Count > 0 && die.Boon.Count == 0)
-                {
-                    banes++;
-                }
-            }
+            // foreach(var die in definition.Value)
+            // {
+            //     if (die.Boon.Count > 0 && die.Bane.Count == 0)
+            //     {
+            //         boons++;
+            //     }
 
-            var column = boons + banes == 0 ?
-            ",task" :
-            $",{boons}|{banes}";
+            //     if (die.Bane.Count > 0 && die.Boon.Count == 0)
+            //     {
+            //         banes++;
+            //     }
+            // }
 
-            header.Append(column);
-        }
+            // var column = boons + banes == 0 ?
+            // ",task" :
+            // $",{boons}|{banes}";
 
-        return header.ToString();
-    }
+            // header.Append(column);
+        //}
+
+        //return header.ToString();
+    //}
 }

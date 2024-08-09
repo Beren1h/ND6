@@ -12,8 +12,11 @@ public class Odds
         sw.Start();
 
         var results = new ConcurrentDictionary<string, int>();
-        var definitions = $"c:\\lab\\nd6\\app\\.runs\\{selection}".FromFile();
-        
+
+        //var definitions = $"c:\\lab\\nd6\\app\\.runs\\{selection}".FromFile();
+
+        var definitions = $"c:\\lab\\nd6\\app\\.runs\\{selection}".FromFile2();
+
         var combinationsPerDefinition = definitions.ToDictionary (
             d => d.Key,
             d => d.Value.Count.GetCombinations()
@@ -158,10 +161,19 @@ public class Odds
             x => new List<double>()
         );
 
+        var header = new StringBuilder("result");
+
+        foreach(var definition in definitions)
+        {
+            header.Append($",{definition.Key}");
+        }
+
         var content = new StringBuilder();
+        content.AppendLine(header.ToString());
+
         var file = definitions.GetFileName();
 
-        content.AppendLine(definitions.GetHeader());
+        //content.AppendLine(definitions.GetHeader());
 
         foreach (var line in csv)
         {
